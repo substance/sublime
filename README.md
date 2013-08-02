@@ -4,7 +4,7 @@ Substance Sublime
 
 This custom Sublime integration helps us to deal with our many modules.
 It has a very simple git status panel which makes it easier to commit and push.
-Although, being open-source it is probably generally interesting, as it depends on our custom project
+Although, being open-source it is probably not generally interesting, as it depends on our custom project
 configuration files.
 
 How to install
