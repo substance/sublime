@@ -14,6 +14,6 @@ Go into the Sublime Application folder (location depends on operating system).
 
 MacOSX:
 
-  cd $HOME/Library/Application Support/Sublime Text2/Packages
-  git clone https://github.com/substance/sublime.git Substance
+    $ cd $HOME/Library/Application Support/Sublime Text 2/Packages
+    $ git clone https://github.com/substance/sublime.git Substance
 
