@@ -2,7 +2,7 @@ import json
 import os
 import types
 
-MODULES_CONFIG = ".modules.config"
+MODULES_CONFIG = "module.json"
 
 # Converts a dict into a dynamic object
 class DictObject(dict):
