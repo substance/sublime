@@ -192,10 +192,10 @@ class GitCommand(sublime_plugin.TextCommand):
     git = self.settings.get("git_command")
 
     commands = []
-    git_pull = [git] + command
+    git_command = [git] + command
 
     for folder in folders:
-      commands.append({"cmd": git_pull, "working_dir": folder})
+      commands.append({"cmd": git_command, "working_dir": folder})
 
     self.view.window().run_command("batch_exec", {
       "commands": commands,
