@@ -1,13 +1,4 @@
 {
-  "name"          : "substance-sublime",
-  "description"   : "Home brewed sublime integration for managing substance modules.",
-  "url"           : "http://github.com/substance/sublime/",
-  "keywords"      : ["sublime"],
-  "author"        : "Oliver Buchtala",
-  "repository": {
-      "type": "git",
-      "url": "https://github.com/substance/sublime.git"
-  },
   "modules": [
     {
       "repository": "git@github.com:substance/sublime.git",
