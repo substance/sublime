@@ -177,6 +177,29 @@ class GitGuiCommand(sublime_plugin.TextCommand):
     print("Running %s in %s"%(str(cmd), folder))
     p = subprocess.Popen(cmd, cwd=folder)
 
+class GitLogCommand(sublime_plugin.TextCommand):
+
+  def __init__(self, view):
+    self.view = view
+    self.settings = sublime.load_settings(PACKAGE_SETTINGS)
+
+  def run(self, edit):
+    view = self.view
+
+    if not view.id() in MANAGERS:
+      return
+    manager = MANAGERS[view.id()]
+
+    pos = view.sel()[0]
+    folder = manager.get_entry(pos)
+    if folder == None:
+      return
+
+    cmd = self.settings.get("git_log_command")
+    # TODO: prepare command?
+
+    print("Running %s in %s"%(str(cmd), folder))
+    p = subprocess.Popen(cmd, cwd=folder)
 
 class GitCommand(sublime_plugin.TextCommand):
 

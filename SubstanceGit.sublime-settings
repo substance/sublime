@@ -1,4 +1,5 @@
 {
   "git_command": "/usr/bin/git",
-  "git_gui_command": ["/usr/bin/git", "gui"]
+  "git_gui_command": ["/usr/bin/git", "gui"],
+  "git_log_command": ["/usr/bin/gitk", "--all"]
 }
