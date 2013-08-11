@@ -93,6 +93,9 @@ class GitStatusManager():
 
     view = self.view
 
+    sel = view.sel()
+    oldPos = sel[0]
+
     self.load_config()
     self.window.focus_view(self.view)
 
@@ -131,8 +134,8 @@ class GitStatusManager():
     view.set_scratch(True)
 
     view.sel().clear()
-    view.sel().add(sublime.Region(0,0))
-    view.show(0)
+    view.sel().add(oldPos)
+    view.show(oldPos)
 
 class GitStatusCommand(sublime_plugin.WindowCommand):
 
