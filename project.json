@@ -3,7 +3,7 @@
     {
       "repository": "git@github.com:substance/sublime.git",
       "folder": ".",
-      "version": "master"
+      "branch": "master"
     }
   ]
 }
