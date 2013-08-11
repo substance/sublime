@@ -248,6 +248,51 @@ class GitCommand(sublime_plugin.TextCommand):
 
     self.execute(command, folders)
 
+class GitPush(sublime_plugin.TextCommand):
+
+  def __init__(self, view):
+    self.view = view
+    self.settings = sublime.load_settings(PACKAGE_SETTINGS)
+
+  def get_selected_module_config(self, project_data, folder):
+
+    for topFolder in project_data:
+      if folder.startswith(topFolder):
+        folder = folder[len(topFolder)+1:]
+        project_config = project_data[topFolder]["data"]
+        found = [m for m in project_config["modules"] if m["folder"] == folder]
+        if len(found) != 1:
+          return None
+        return {
+          "root_dir": topFolder,
+          "module": found[0]
+        };
+
+    return None
+
+  def run(self, edit, command):
+    view = self.view
+
+    if not view.id() in MANAGERS:
+      return
+    manager = MANAGERS[view.id()]
+
+    pos = view.sel()[0]
+    folder = manager.get_entry(pos)
+    config = manager.load_config()
+
+    module_config = self.get_selected_module_config(config, folder)
+
+    if module_config != None:
+      module = module_config["module"]
+      git = self.settings.get("git_command")
+      cmd = [git] + ["push", "origin", module["branch"]];
+      commands = [{"cmd": cmd, "working_dir": os.path.join(module_config["root_dir"], module["folder"])}]
+      self.view.window().run_command("batch_exec", {
+        "commands": commands,
+        "callbackCmd": "git_status"
+      })
+
 class GitToggleStatusCommand(sublime_plugin.TextCommand):
 
   def run(self, edit):
