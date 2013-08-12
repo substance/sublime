@@ -202,7 +202,7 @@ class GitLogCommand(sublime_plugin.TextCommand):
     # TODO: prepare command?
 
     print("Running %s in %s"%(str(cmd), folder))
-    p = subprocess.Popen(cmd, cwd=folder)
+    p = subprocess.Popen(cmd, cwd=folder, shell=True)
 
 class GitCommand(sublime_plugin.TextCommand):
 
