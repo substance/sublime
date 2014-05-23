@@ -29,7 +29,11 @@ class GitStatusManager():
       cmd.append("-s")
 
     try:
-      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=folder)
+      startupinfo = None
+      if os.name == 'nt':
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=folder, startupinfo=startupinfo)
       out, err = p.communicate()
 
       lines = out.splitlines()
@@ -178,7 +182,11 @@ class GitGuiCommand(sublime_plugin.TextCommand):
     # TODO: prepare command?
 
     print("Running %s in %s"%(str(cmd), folder))
-    p = subprocess.Popen(cmd, cwd=folder)
+    startupinfo = None
+    if os.name == 'nt':
+      startupinfo = subprocess.STARTUPINFO()
+      startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    p = subprocess.Popen(cmd, cwd=folder, startupinfo=startupinfo)
 
 class GitLogCommand(sublime_plugin.TextCommand):
 
@@ -202,7 +210,11 @@ class GitLogCommand(sublime_plugin.TextCommand):
     # TODO: prepare command?
 
     print("Running %s in %s"%(str(cmd), folder))
-    p = subprocess.Popen(cmd, cwd=folder, shell=True)
+    startupinfo = None
+    if os.name == 'nt':
+      startupinfo = subprocess.STARTUPINFO()
+      startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    p = subprocess.Popen(cmd, cwd=folder, shell=True, startupinfo=startupinfo)
 
 class GitCommand(sublime_plugin.TextCommand):
 
