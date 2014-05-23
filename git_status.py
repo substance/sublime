@@ -34,7 +34,7 @@ class GitStatusManager():
 
       lines = out.splitlines()
 
-      if self.short and len(lines) == 1 and not "..." in lines[0]:
+      if self.short and len(lines) == 1 and not ("ahead" in lines[0] or "behind" in lines[0]):
         return None
       if out == None or out == "":
         return None
