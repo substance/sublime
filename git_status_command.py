@@ -12,7 +12,6 @@ NAME = ".Git.Status"
 
 class GitStatusManager():
 
-
   def __init__(self, window, view):
     self.window = window
     self.view = view
