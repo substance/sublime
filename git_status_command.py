@@ -27,6 +27,9 @@ class GitStatusManager():
       git_command = self.settings.get('git_command')
       stat = gitstatus(folder, git_command=git_command, plain_only=not self.short)
 
+      if not stat:
+        return None
+
       print('Status for %s: %s'%(folder, stat))
 
       if self.short:
