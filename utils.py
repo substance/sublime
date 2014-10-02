@@ -3,6 +3,7 @@ import os
 import types
 
 MODULES_CONFIG = ".screwdriver/project.json"
+MODULES_CONFIG_LEGACY = "project.json"
 
 # Converts a dict into a dynamic object
 class DictObject(dict):

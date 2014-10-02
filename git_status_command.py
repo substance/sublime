@@ -3,7 +3,8 @@ import subprocess
 import os
 import time
 import re
-from utils import read_config, MODULES_CONFIG
+from utils import read_config, MODULES_CONFIG, MODULES_CONFIG_LEGACY
+from gitstatus import gitstatus
 
 PACKAGE_SETTINGS = "SubstanceGit.sublime-settings"
 
@@ -20,29 +21,28 @@ class GitStatusManager():
     self.settings = sublime.load_settings(PACKAGE_SETTINGS)
     self.entries = []
 
-  def process_folder(self, folder, config):
-
-    git_command = self.settings.get('git_command')
-    cmd = [git_command, "status", "-b"]
-    if self.short:
-      cmd.append("-s")
+  def get_status_for_folder(self, folder):
 
     try:
-      startupinfo = None
-      if os.name == 'nt':
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=folder, startupinfo=startupinfo)
-      out, err = p.communicate()
+      git_command = self.settings.get('git_command')
+      stat = gitstatus(folder, git_command=git_command, plain_only=not self.short)
 
-      lines = out.splitlines()
+      print('Status for %s: %s'%(folder, stat))
 
-      if self.short and len(lines) == 1 and not ("ahead" in lines[0] or "behind" in lines[0]):
-        return None
-      if out == None or out == "":
-        return None
+      if self.short:
+        if stat['clean'] and not stat['ahead'] and not stat['behind']:
+          return None
+        else:
+          s = []
+          s.append("Remote: %s, Branch: %s"%(stat['remote'], stat['branch']))
+          if stat['ahead']:
+            s.append("%s commits ahead"%(stat['ahead']))
+          if stat['behind']:
+            s.append("%s commits behind"%(stat['behind']))
+
+          return [ folder, '\n'.join([', '.join(s), stat['status']]) ]
       else:
-        return [folder, out]
+        return [ folder, stat['status'] ]
 
     except OSError as err:
       print(err)
@@ -50,14 +50,18 @@ class GitStatusManager():
 
   def process_top_folder(self, folder):
     result = []
-    config = self.config[folder]
 
-    for m in config['data'].modules:
-      module_dir = os.path.join(folder, m.folder)
-      if not os.path.exists(module_dir):
-        continue
-
-      item = self.process_folder(module_dir, m)
+    if folder in self.config:
+      config = self.config[folder]
+      for m in config['data'].modules:
+        module_dir = os.path.join(folder, m.folder)
+        if not os.path.exists(module_dir):
+          continue
+        item = self.get_status_for_folder(module_dir)
+        if not item == None:
+          result.append(item)
+    else:
+      item = self.get_status_for_folder(folder)
       if not item == None:
         result.append(item)
 
@@ -68,7 +72,11 @@ class GitStatusManager():
     for folder in self.window.folders():
       config_file = os.path.join(folder, MODULES_CONFIG)
       if not os.path.exists(config_file):
-        continue
+        config_file = os.path.join(folder, MODULES_CONFIG_LEGACY)
+        if os.path.exists(config_file):
+          print('DEPRECATED: please move "project.json" to ".screwdriver/project.json"')
+        else:
+          continue
 
       if not folder in self.config or self.config[folder]['timestamp'] < os.path.getmtime(config_file):
         print("Loading config: %s"%config_file)
