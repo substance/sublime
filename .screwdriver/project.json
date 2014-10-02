@@ -1,9 +1,0 @@
-{
-  "modules": [
-    {
-      "repository": "git@github.com:substance/sublime.git",
-      "folder": ".",
-      "branch": "master"
-    }
-  ]
-}

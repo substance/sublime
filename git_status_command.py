@@ -112,8 +112,7 @@ class GitStatusManager():
 
     changes = []
     for folder in self.window.folders():
-      if folder in self.config:
-        changes.extend(self.process_top_folder(folder))
+      changes.extend(self.process_top_folder(folder))
 
     # begin edit for adding content
     view.set_read_only(False)
