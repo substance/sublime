@@ -47,3 +47,27 @@ Example:
 `repository`, where to pull the sub-module from, folder where to put the sub-module relative to the root folder, and `branch`, which branch to use.
 
 This approach is a bit more general than with Git sub-modules, in that you still need to create a commit to change a sub-module's branch, but not for updates.
+
+
+Settings
+--------
+
+These are example settings from different environments:
+
+- Windows:
+
+  ```
+  {
+    "git_command": "C:\\Program Files (x86)\\Git\\bin\\git.exe",
+    "git_gui_command": ["C:\\Program Files (x86)\\Git\\bin\\git.exe", "gui"],
+    "git_log_command": ["C:\\Program Files (x86)\\Git\\bin\\gitk", "--all"]
+  }
+  ```
+
+- Linux
+
+  TODO
+
+- OSX
+
+  TODO
