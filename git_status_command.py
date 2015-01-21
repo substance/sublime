@@ -25,25 +25,28 @@ class GitStatusManager():
 
     try:
       git_command = self.settings.get('git_command')
-      stat = gitstatus(folder, git_command=git_command, plain_only=not self.short)
+      stat = gitstatus(folder, git_command=git_command, plain_only=True)
 
       if not stat:
         return None
 
       print('Status for %s: %s'%(folder, stat))
 
-      if self.short:
-        if stat['clean'] and not stat['ahead'] and not stat['behind']:
-          return None
-        else:
-          s = []
-          s.append("Remote: %s, Branch: %s"%(stat['remote'], stat['branch']))
-          if stat['ahead']:
-            s.append("%s commits ahead"%(stat['ahead']))
-          if stat['behind']:
-            s.append("%s commits behind"%(stat['behind']))
+      # if self.short:
+      #   if stat['clean'] and not stat['ahead'] and not stat['behind']:
+      #     return None
+      #   else:
+      #     s = []
+      #     s.append("Remote: %s, Branch: %s"%(stat['remote'], stat['branch']))
+      #     if stat['ahead']:
+      #       s.append("%s commits ahead"%(stat['ahead']))
+      #     if stat['behind']:
+      #       s.append("%s commits behind"%(stat['behind']))
 
-          return [ folder, '\n'.join([', '.join(s), stat['status']]) ]
+      #     return [ folder, '\n'.join([', '.join(s), stat['status']]) ]
+      # else:
+      if self.short and 'nothing to commit' in stat['status']:
+        return None
       else:
         return [ folder, stat['status'] ]
 
@@ -245,8 +248,8 @@ class GitCommand(sublime_plugin.TextCommand):
       commands.append({"cmd": git_command, "working_dir": folder})
 
     self.view.window().run_command("batch_exec", {
-      "commands": commands,
-      "callbackCmd": "git_status"
+      "commands": commands
+      #"callbackCmd": "git_status"
     })
 
   def run(self, edit, command, all=False):
@@ -313,8 +316,8 @@ class GitPush(sublime_plugin.TextCommand):
       cmd = [git] + ["push", "origin", module["branch"]];
       commands = [{"cmd": cmd, "working_dir": os.path.join(module_config["root_dir"], module["folder"])}]
       self.view.window().run_command("batch_exec", {
-        "commands": commands,
-        "callbackCmd": "git_status"
+        "commands": commands
+        #"callbackCmd": "git_status"
       })
 
 class GitToggleStatusCommand(sublime_plugin.TextCommand):
