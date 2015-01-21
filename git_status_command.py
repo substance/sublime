@@ -45,8 +45,8 @@ class GitStatusManager():
 
       #     return [ folder, '\n'.join([', '.join(s), stat['status']]) ]
       # else:
-      if self.short and 'nothing to commit' in stat['status']:
-        return None
+      if self.short and 'nothing to commit' in stat['status'] and not 'Your branch is ahead' in stat['status'] and not 'Your branch is behind' in stat['status']:
+          return None
       else:
         return [ folder, stat['status'] ]
 
@@ -316,8 +316,8 @@ class GitPush(sublime_plugin.TextCommand):
       cmd = [git] + ["push", "origin", module["branch"]];
       commands = [{"cmd": cmd, "working_dir": os.path.join(module_config["root_dir"], module["folder"])}]
       self.view.window().run_command("batch_exec", {
-        "commands": commands
-        #"callbackCmd": "git_status"
+        "commands": commands,
+        "callbackCmd": "git_status"
       })
 
 class GitToggleStatusCommand(sublime_plugin.TextCommand):
