@@ -20,6 +20,18 @@
       "name": "markup.inserted",
       "comment": "Output row of `git status -s`"
     },
+    { "match": "^\s*modified:.*$",
+      "name": "markup.changed",
+      "comment": "Output row of `git status`"
+    },
+    { "match": "^\s*new:.*$",
+      "name": "markup.changed",
+      "comment": "Output row of `git status`"
+    },
+    { "match": "^\s*deleted:.*$",
+      "name": "markup.deleted",
+      "comment": "Output row of `git status`"
+    },
   ],
   "uuid": "ca03e7a1-0aef-43a0-9aab-9b9aaaeac418"
 }

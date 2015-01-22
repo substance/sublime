@@ -21,6 +21,45 @@ class GitStatusManager():
     self.settings = sublime.load_settings(PACKAGE_SETTINGS)
     self.entries = []
 
+  def parse_status_message(self, message):
+    output = []
+
+    state = "top"
+
+    RE_STAGED_CHANGES = re.compile('^Changes to be committed.*$')
+    RE_UNSTAGED_CHANGES = re.compile('^Changes not staged.*$')
+    RE_UNTRACKED_FILES = re.compile('^Untracked files.*$')
+    RE_WS = re.compile('^\s*$')
+    RE_COMMENT = re.compile('^\s*\(.+$')
+
+    for line in message.splitlines():
+      if RE_WS.match(line):
+        continue
+      if RE_STAGED_CHANGES.match(line):
+        state = "staged"
+        output.append("")
+        output.append("Staged:")
+        continue
+      if RE_UNSTAGED_CHANGES.match(line):
+        state = "unstaged"
+        output.append("")
+        output.append("Unstaged:")
+        continue
+      if RE_UNTRACKED_FILES.match(line):
+        state = "untracked"
+        continue
+      if RE_COMMENT.match(line):
+        continue
+
+      if state == "top":
+        output.append(line)
+      elif state == "untracked":
+        output.append("  new:        %s"%line.strip())
+      else:
+        output.append("  "+line.strip())
+
+    return '\n'.join(output)
+
   def get_status_for_folder(self, folder):
 
     try:
@@ -30,7 +69,7 @@ class GitStatusManager():
       if not stat:
         return None
 
-      print('Status for %s: %s'%(folder, stat))
+      #print('Status for %s: %s'%(folder, stat))
 
       # if self.short:
       #   if stat['clean'] and not stat['ahead'] and not stat['behind']:
@@ -45,8 +84,11 @@ class GitStatusManager():
 
       #     return [ folder, '\n'.join([', '.join(s), stat['status']]) ]
       # else:
+      if self.short:
+        stat['status'] = self.parse_status_message(stat['status'])
+
       if self.short and 'nothing to commit' in stat['status'] and not 'Your branch is ahead' in stat['status'] and not 'Your branch is behind' in stat['status']:
-          return None
+        return None
       else:
         return [ folder, stat['status'] ]
 

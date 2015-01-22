@@ -49,6 +49,30 @@
       <key>name</key>
       <string>markup.inserted</string>
     </dict>
+    <dict>
+      <key>comment</key>
+      <string>Output row of `git status`</string>
+      <key>match</key>
+      <string>^\s*modified:.*$</string>
+      <key>name</key>
+      <string>markup.changed</string>
+    </dict>
+    <dict>
+      <key>comment</key>
+      <string>Output row of `git status`</string>
+      <key>match</key>
+      <string>^\s*new:.*$</string>
+      <key>name</key>
+      <string>markup.changed</string>
+    </dict>
+    <dict>
+      <key>comment</key>
+      <string>Output row of `git status`</string>
+      <key>match</key>
+      <string>^\s*deleted:.*$</string>
+      <key>name</key>
+      <string>markup.deleted</string>
+    </dict>
   </array>
   <key>scopeName</key>
   <string>text.git_status</string>
