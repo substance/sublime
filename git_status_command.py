@@ -57,6 +57,10 @@ class GitStatusManager():
   def process_top_folder(self, folder):
     result = []
 
+    item = self.get_status_for_folder(folder)
+    if not item == None:
+      result.append(item)
+
     if folder in self.config:
       config = self.config[folder]
       for m in config['data'].modules:
@@ -66,10 +70,6 @@ class GitStatusManager():
         item = self.get_status_for_folder(module_dir)
         if not item == None:
           result.append(item)
-    else:
-      item = self.get_status_for_folder(folder)
-      if not item == None:
-        result.append(item)
 
     return result
 
