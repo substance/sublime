@@ -26,12 +26,14 @@ class GitStatusManager():
 
     state = "top"
 
-    RE_STAGED_CHANGES = re.compile('^Changes to be committed.*$')
-    RE_UNSTAGED_CHANGES = re.compile('^Changes not staged.*$')
-    RE_UNTRACKED_FILES = re.compile('^Untracked files.*$')
-    RE_WS = re.compile('^\s*$')
-    RE_COMMENT = re.compile('^\s*\(.+$')
-    RE_COMMENT2 = re.compile('^\s*no changes added to commit')
+    PREFIX = '#?\s*'
+
+    RE_STAGED_CHANGES = re.compile('^%sChanges to be committed.*$'%PREFIX)
+    RE_UNSTAGED_CHANGES = re.compile('^%sChanges not staged.*$'%PREFIX)
+    RE_UNTRACKED_FILES = re.compile('^%sUntracked files.*$'%PREFIX)
+    RE_WS = re.compile('^%s$'%PREFIX)
+    RE_COMMENT = re.compile('^%s\(.+$'%PREFIX)
+    RE_COMMENT2 = re.compile('^%sno changes added to commit'%PREFIX)
 
     for line in message.splitlines():
       if RE_WS.match(line):
