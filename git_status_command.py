@@ -27,13 +27,13 @@ class GitStatusManager():
     state = "top"
 
     PREFIX = '#?\s*'
-
     RE_STAGED_CHANGES = re.compile('^%sChanges to be committed.*$'%PREFIX)
     RE_UNSTAGED_CHANGES = re.compile('^%sChanges not staged.*$'%PREFIX)
     RE_UNTRACKED_FILES = re.compile('^%sUntracked files.*$'%PREFIX)
     RE_WS = re.compile('^%s$'%PREFIX)
     RE_COMMENT = re.compile('^%s\(.+$'%PREFIX)
     RE_COMMENT2 = re.compile('^%sno changes added to commit'%PREFIX)
+    RE_STRIP_PREFIX = re.compile('^%s(.*)$'%PREFIX)
 
     for line in message.splitlines():
       if RE_WS.match(line):
@@ -54,12 +54,17 @@ class GitStatusManager():
       if RE_COMMENT.match(line) or RE_COMMENT2.match(line):
         continue
 
+      stripped = line;
+      m = RE_STRIP_PREFIX.match(line)
+      if m:
+        stripped = m.group(1)
+
       if state == "top":
-        output.append(line)
+        output.append(stripped)
       elif state == "untracked":
-        output.append("  new:        %s"%line.strip())
+        output.append("  new:        %s"%stripped)
       else:
-        output.append("  "+line.strip())
+        output.append("  "+stripped)
 
     return '\n'.join(output)
 
