@@ -31,6 +31,7 @@ class GitStatusManager():
     RE_UNTRACKED_FILES = re.compile('^Untracked files.*$')
     RE_WS = re.compile('^\s*$')
     RE_COMMENT = re.compile('^\s*\(.+$')
+    RE_COMMENT2 = re.compile('^\s*no changes added to commit')
 
     for line in message.splitlines():
       if RE_WS.match(line):
@@ -48,7 +49,7 @@ class GitStatusManager():
       if RE_UNTRACKED_FILES.match(line):
         state = "untracked"
         continue
-      if RE_COMMENT.match(line):
+      if RE_COMMENT.match(line) or RE_COMMENT2.match(line):
         continue
 
       if state == "top":
