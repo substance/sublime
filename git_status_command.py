@@ -93,9 +93,12 @@ class GitStatusManager():
       #     return [ folder, '\n'.join([', '.join(s), stat['status']]) ]
       # else:
       if self.short:
-        stat['status'] = self.parse_status_message(stat['status'])
+        stat['status'] = self.parse_status_message(stat['status']).strip()
 
-      if self.short and 'nothing to commit' in stat['status'] and not 'Your branch is ahead' in stat['status'] and not 'Your branch is behind' in stat['status']:
+      if stat['status'] == "" or stat['status'] == None:
+        return None
+
+      if self.short and 'nothing to commit' in stat['status'] and not 'Your branch is ahead' in stat['status'] and not 'Your branch is behind' in stat['status'] and not 'have diverged' in stat['status']:
         return None
       else:
         return [ folder, stat['status'] ]
