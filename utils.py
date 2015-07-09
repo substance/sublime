@@ -56,15 +56,12 @@ def find_git_repos(root, config):
   if "devDependencies" in package_config:
     for name, version in package_config["devDependencies"].iteritems():
       deps[name] = version
-
   for name, version in deps.iteritems():
     match = GIT_REPO_EXPRESSION.match(version)
     if match:
       module_dir = os.path.join(root, 'node_modules', name);
       # only take over modules with a non SHA-1 version
-      if match.group(3) and SHA1_EXPRESSION.match(match.group(3)):
-        continue
-      elif os.path.exists(module_dir):
+      if os.path.exists(os.path.join(module_dir, '.git')):
         repo = git_repo_info(module_dir)
         repo["path"] = module_dir
         config[module_dir] = repo
