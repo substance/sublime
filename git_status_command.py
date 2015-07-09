@@ -74,20 +74,6 @@ class GitStatusManager():
       stat = gitstatus(folder, git_command=git_command, plain_only=True)
       if not stat:
         return None
-      #print('Status for %s: %s'%(folder, stat))
-      # if self.short:
-      #   if stat['clean'] and not stat['ahead'] and not stat['behind']:
-      #     return None
-      #   else:
-      #     s = []
-      #     s.append("Remote: %s, Branch: %s"%(stat['remote'], stat['branch']))
-      #     if stat['ahead']:
-      #       s.append("%s commits ahead"%(stat['ahead']))
-      #     if stat['behind']:
-      #       s.append("%s commits behind"%(stat['behind']))
-
-      #     return [ folder, '\n'.join([', '.join(s), stat['status']]) ]
-      # else:
       if self.short:
         stat['status'] = self.parse_status_message(stat['status']).strip()
 
@@ -96,8 +82,10 @@ class GitStatusManager():
 
       if self.short and 'nothing to commit' in stat['status'] and not 'Your branch is ahead' in stat['status'] and not 'Your branch is behind' in stat['status'] and not 'have diverged' in stat['status']:
         return None
-      else:
+      elif self.short:
         return [ folder, stat['status'] ]
+      else:
+        return [ folder, "Sha: %s\n\n%s"%(stat['sha'], stat['status']) ]
 
     except OSError as err:
       print(err)

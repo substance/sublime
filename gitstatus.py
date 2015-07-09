@@ -47,8 +47,10 @@ def gitstatus(folder, git_command='git', plain_only=False):
 
   if (plain_only):
     status_plain = _Popen([git_command, 'status'], folder, stdout=PIPE).communicate()[0]
+    sha = _Popen([git_command,'rev-parse', 'HEAD'], folder, stdout=PIPE).communicate()[0].strip()
     return {
-      "status": status_plain
+      "status": status_plain,
+      "sha": sha
     }
   gitsym = _Popen([git_command, 'symbolic-ref', 'HEAD'], folder, stdout=PIPE, stderr=PIPE)
   branch, error = gitsym.communicate()
@@ -87,12 +89,13 @@ def gitstatus(folder, git_command='git', plain_only=False):
   remote = ''
 
   tag, tag_error = _Popen([git_command, 'describe', '--exact-match'], folder, stdout=PIPE, stderr=PIPE).communicate()
+  sha = _Popen([git_command,'rev-parse','HEAD'], folder, stdout=PIPE).communicate()[0].strip()
 
   if not branch: # not on any branch
     if tag: # if we are on a tag, print the tag's name
       branch = tag
     else:
-      branch = symbols['prehash'] + _Popen([git_command,'rev-parse','--short','HEAD'], folder, stdout=PIPE).communicate()[0].decode('utf-8')[:-1]
+      branch = symbols['prehash'] + sha.decode('utf-8')[:-1]
   else:
     remote_name = _Popen([git_command,'config','branch.%s.remote' % branch], folder, stdout=PIPE).communicate()[0].strip()
     if remote_name:
@@ -123,6 +126,7 @@ def gitstatus(folder, git_command='git', plain_only=False):
   result = {
     "remote": str(remote_name),
     "branch": str(branch),
+    "sha": str(sha),
     "ahead": ahead,
     "behind": behind,
     "staged": staged,
