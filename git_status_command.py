@@ -3,7 +3,7 @@ import subprocess
 import os
 import time
 import re
-from utils import read_config, MODULES_CONFIG, MODULES_CONFIG_LEGACY
+from utils import read_project_config
 from gitstatus import gitstatus
 
 PACKAGE_SETTINGS = "SubstanceGit.sublime-settings"
@@ -69,16 +69,12 @@ class GitStatusManager():
     return '\n'.join(output)
 
   def get_status_for_folder(self, folder):
-
     try:
       git_command = self.settings.get('git_command')
       stat = gitstatus(folder, git_command=git_command, plain_only=True)
-
       if not stat:
         return None
-
       #print('Status for %s: %s'%(folder, stat))
-
       # if self.short:
       #   if stat['clean'] and not stat['ahead'] and not stat['behind']:
       #     return None
@@ -107,20 +103,19 @@ class GitStatusManager():
       print(err)
       return None
 
-  def process_top_folder(self, folder):
+  def process_top_folder(self, topFolder):
     result = []
 
-    item = self.get_status_for_folder(folder)
+    item = self.get_status_for_folder(topFolder)
     if not item == None:
       result.append(item)
 
-    if folder in self.config:
-      config = self.config[folder]
-      for m in config['data'].modules:
-        module_dir = os.path.join(folder, m.folder)
-        if not os.path.exists(module_dir):
+    if topFolder in self.config:
+      config = self.config[topFolder]
+      for folder in config['data']:
+        if not os.path.exists(folder):
           continue
-        item = self.get_status_for_folder(module_dir)
+        item = self.get_status_for_folder(folder)
         if not item == None:
           result.append(item)
 
@@ -129,19 +124,14 @@ class GitStatusManager():
   def load_config(self):
     # Check if we have to reload the config file
     for folder in self.window.folders():
-      config_file = os.path.join(folder, MODULES_CONFIG)
+      config_file = os.path.join(folder, "package.json")
       if not os.path.exists(config_file):
-        config_file = os.path.join(folder, MODULES_CONFIG_LEGACY)
-        if os.path.exists(config_file):
-          print('DEPRECATED: please move "project.json" to ".screwdriver/project.json"')
-        else:
-          continue
-
+        continue
       if not folder in self.config or self.config[folder]['timestamp'] < os.path.getmtime(config_file):
         print("Loading config: %s"%config_file)
         self.config[folder] = {
           "timestamp": os.path.getmtime(config_file),
-          "data": read_config(config_file)
+          "data": read_project_config(folder)
         }
 
     return self.config
@@ -318,8 +308,8 @@ class GitCommand(sublime_plugin.TextCommand):
     if all:
       config = manager.load_config()
       for topFolder in config:
-        for m in config[topFolder]['data'].modules:
-          folders.append(os.path.join(topFolder, m.folder))
+        for folder in config[topFolder]["data"]:
+          folders.append(folder)
 
     else:
       folder = manager.get_entry(pos)
@@ -335,19 +325,9 @@ class GitPush(sublime_plugin.TextCommand):
     self.settings = sublime.load_settings(PACKAGE_SETTINGS)
 
   def get_selected_module_config(self, project_data, folder):
-
     for topFolder in project_data:
-      if folder.startswith(topFolder):
-        folder = folder[len(topFolder)+1:]
-        project_config = project_data[topFolder]["data"]
-        found = [m for m in project_config["modules"] if m["folder"] == folder]
-        if len(found) != 1:
-          return None
-        return {
-          "root_dir": topFolder,
-          "module": found[0]
-        };
-
+      if folder in project_data[topFolder]["data"]:
+        return project_data[topFolder]["data"][folder]
     return None
 
   def run(self, edit, command):
@@ -361,13 +341,12 @@ class GitPush(sublime_plugin.TextCommand):
     folder = manager.get_entry(pos)
     config = manager.load_config()
 
-    module_config = self.get_selected_module_config(config, folder)
+    repo = self.get_selected_module_config(config, folder)
 
-    if module_config != None:
-      module = module_config["module"]
+    if repo != None:
       git = self.settings.get("git_command")
-      cmd = [git] + ["push", "origin", module["branch"]];
-      commands = [{"cmd": cmd, "working_dir": os.path.join(module_config["root_dir"], module["folder"])}]
+      cmd = [git] + ["push", "origin", repo["branch"]];
+      commands = [{"cmd": cmd, "working_dir": repo["path"]}]
       self.view.window().run_command("batch_exec", {
         "commands": commands,
         "callbackCmd": "git_status"
