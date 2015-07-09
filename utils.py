@@ -38,7 +38,7 @@ def read_json(filename):
       return None
 
 REPO_ID = "([a-zA-Z0-9_-]+)"
-GIT_REPO_EXPRESSION = re.compile(REPO_ID+"/"+REPO_ID+"(?:#"+REPO_ID+")?")
+GIT_REPO_EXPRESSION = re.compile(REPO_ID+"/"+REPO_ID+"(?:.git)?"+"(?:#"+REPO_ID+")?")
 SHA1_EXPRESSION = re.compile("[a-fA-F0-9]{40}");
 
 PACKAGE_FILE = "package.json"
@@ -47,6 +47,7 @@ def package_file(root):
 
 
 def find_git_repos(root, config):
+  print("### looking for repos in %s"%root)
   package_config = read_json(package_file(root))
   deps = {}
   if "dependencies" in package_config:
@@ -63,7 +64,7 @@ def find_git_repos(root, config):
       # only take over modules with a non SHA-1 version
       if match.group(3) and SHA1_EXPRESSION.match(match.group(3)):
         continue
-      elif (os.path.exists(module_dir)):
+      elif os.path.exists(module_dir):
         repo = git_repo_info(module_dir)
         repo["path"] = module_dir
         config[module_dir] = repo
@@ -73,6 +74,6 @@ def read_project_config(root):
   config = {}
   repo = git_repo_info(root)
   repo["path"] = root
-  config[root] = repo
   find_git_repos(root, config)
+  print(config)
   return config

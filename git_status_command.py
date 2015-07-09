@@ -112,7 +112,7 @@ class GitStatusManager():
 
     if topFolder in self.config:
       config = self.config[topFolder]
-      for folder in config['data']:
+      for folder in config['data'].keys():
         if not os.path.exists(folder):
           continue
         item = self.get_status_for_folder(folder)
@@ -308,7 +308,7 @@ class GitCommand(sublime_plugin.TextCommand):
     if all:
       config = manager.load_config()
       for topFolder in config:
-        for folder in config[topFolder]["data"]:
+        for folder in config[topFolder]["data"].keys():
           folders.append(folder)
 
     else:
