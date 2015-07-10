@@ -85,7 +85,7 @@ class GitStatusManager():
       elif self.short:
         return [ folder, stat['status'] ]
       else:
-        return [ folder, "Sha: %s\n\n%s"%(stat['sha'], stat['status']) ]
+        return [ folder, "sha: %s\n\n%s"%(stat['sha'], stat['status']) ]
 
     except OSError as err:
       print(err)
