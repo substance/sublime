@@ -30,13 +30,11 @@ def git_repo_info(folder, git_command='git'):
   branch, error = gitsym.communicate()
   error_string = error.decode('utf-8')
   if 'fatal: Not a git repository' in error_string:
-    return None
+    raise Exception(error_string)
   branch = branch.decode('utf-8').strip()[11:]
-  if not branch: # not on any branch
-    return None
   remote_name = _Popen([git_command,'config','branch.%s.remote' % branch], folder, stdout=PIPE).communicate()[0].strip()
   if not remote_name:
-    return None
+    remote_name = None
   return {
     "path": folder,
     "remote": remote_name,
