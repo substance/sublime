@@ -46,8 +46,7 @@ def package_file(root):
   return os.path.join(root, PACKAGE_FILE)
 
 
-def find_git_repos(root, config):
-  print("### looking for repos in %s"%root)
+def find_git_repos(root, config, git_command):
   package_config = read_json(package_file(root))
   deps = {}
   if "dependencies" in package_config:
@@ -62,15 +61,15 @@ def find_git_repos(root, config):
       module_dir = os.path.join(root, 'node_modules', name);
       # only take over modules with a non SHA-1 version
       if os.path.exists(os.path.join(module_dir, '.git')):
-        repo = git_repo_info(module_dir)
+        repo = git_repo_info(module_dir, git_command=git_command)
         repo["path"] = module_dir
         config[module_dir] = repo
-        find_git_repos(module_dir, config)
+        find_git_repos(module_dir, config, git_command)
 
-def read_project_config(root):
+def read_project_config(root, git_command):
   config = {}
-  repo = git_repo_info(root)
+  repo = git_repo_info(root, git_command=git_command)
   repo["path"] = root
-  find_git_repos(root, config)
+  find_git_repos(root, config, git_command)
   print(config)
   return config

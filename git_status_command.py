@@ -119,7 +119,7 @@ class GitStatusManager():
         print("Loading config: %s"%config_file)
         self.config[folder] = {
           "timestamp": os.path.getmtime(config_file),
-          "data": read_project_config(folder)
+          "data": read_project_config(folder, git_command=self.settings.get("git_command"))
         }
 
     return self.config
