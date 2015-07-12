@@ -47,7 +47,6 @@ def package_file(root):
 
 
 def find_git_repos(root, config):
-  print("### looking for repos in %s"%root)
   package_config = read_json(package_file(root))
   deps = {}
   if "dependencies" in package_config:
@@ -67,10 +66,10 @@ def find_git_repos(root, config):
         config[module_dir] = repo
         find_git_repos(module_dir, config)
 
-def read_project_config(root):
+def find_children_modules(root):
   config = {}
-  repo = git_repo_info(root)
-  repo["path"] = root
+  root_repo = git_repo_info(root)
+  root_repo["path"] = root
+  config[root] = root_repo
   find_git_repos(root, config)
-  print(config)
   return config

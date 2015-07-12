@@ -3,8 +3,8 @@ import subprocess
 import os
 import time
 import re
-from utils import read_project_config
-from gitstatus import gitstatus
+from utils import find_children_modules
+from gitstatus import gitstatus, git_repo_info
 
 PACKAGE_SETTINGS = "SubstanceGit.sublime-settings"
 
@@ -16,7 +16,7 @@ class GitStatusManager():
   def __init__(self, window, view):
     self.window = window
     self.view = view
-    self.config = {}
+    self.config = self.load_config()
     self.short = True
     self.settings = sublime.load_settings(PACKAGE_SETTINGS)
     self.entries = []
@@ -91,38 +91,27 @@ class GitStatusManager():
       print(err)
       return None
 
-  def process_top_folder(self, topFolder):
+  def process_folder(self, folder):
     result = []
-
-    item = self.get_status_for_folder(topFolder)
+    item = self.get_status_for_folder(folder)
     if not item == None:
       result.append(item)
-
-    if topFolder in self.config:
-      config = self.config[topFolder]
-      for folder in config['data'].keys():
-        if not os.path.exists(folder):
-          continue
-        item = self.get_status_for_folder(folder)
-        if not item == None:
-          result.append(item)
-
     return result
 
   def load_config(self):
     # Check if we have to reload the config file
+    config = {}
     for folder in self.window.folders():
-      config_file = os.path.join(folder, "package.json")
-      if not os.path.exists(config_file):
-        continue
-      if not folder in self.config or self.config[folder]['timestamp'] < os.path.getmtime(config_file):
-        print("Loading config: %s"%config_file)
-        self.config[folder] = {
-          "timestamp": os.path.getmtime(config_file),
-          "data": read_project_config(folder)
-        }
-
-    return self.config
+      package_config_file = os.path.join(folder, "package.json")
+      if os.path.exists(package_config_file):
+        # add folders of submodules
+        config.update(find_children_modules(folder))
+      else:
+        root_repo = git_repo_info(folder)
+        root_repo["path"] = folder
+        config[folder] = root_repo
+    self.config = config
+    return config
 
   def get_entry(self, pos):
     pos = pos.begin()
@@ -144,12 +133,11 @@ class GitStatusManager():
     sel = view.sel()
     oldPos = sel[0]
 
-    self.load_config()
     self.window.focus_view(self.view)
 
     changes = []
-    for folder in self.window.folders():
-      changes.extend(self.process_top_folder(folder))
+    for folder in sorted(self.config.keys()):
+      changes.extend(self.process_folder(folder))
 
     # begin edit for adding content
     view.set_read_only(False)
@@ -294,11 +282,9 @@ class GitCommand(sublime_plugin.TextCommand):
 
     folders = []
     if all:
-      config = manager.load_config()
-      for topFolder in config:
-        for folder in config[topFolder]["data"].keys():
-          folders.append(folder)
-
+      config = manager.config()
+      for folder in config:
+        folders.append(folder)
     else:
       folder = manager.get_entry(pos)
       if folder != None:
@@ -327,7 +313,7 @@ class GitPush(sublime_plugin.TextCommand):
 
     pos = view.sel()[0]
     folder = manager.get_entry(pos)
-    config = manager.load_config()
+    config = manager.config()
 
     repo = self.get_selected_module_config(config, folder)
 
