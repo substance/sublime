@@ -16,9 +16,9 @@ class GitStatusManager():
   def __init__(self, window, view):
     self.window = window
     self.view = view
+    self.settings = sublime.load_settings(PACKAGE_SETTINGS)
     self.config = self.load_config()
     self.short = True
-    self.settings = sublime.load_settings(PACKAGE_SETTINGS)
     self.entries = []
 
   def parse_status_message(self, message):
@@ -105,9 +105,9 @@ class GitStatusManager():
       package_config_file = os.path.join(folder, "package.json")
       if os.path.exists(package_config_file):
         # add folders of submodules
-        config.update(find_children_modules(folder))
+        config.update(find_children_modules(folder, git_command=self.settings.get("git_command")))
       else:
-        root_repo = git_repo_info(folder)
+        root_repo = git_repo_info(folder, git_command=self.settings.get("git_command"))
         root_repo["path"] = folder
         config[folder] = root_repo
     self.config = config
