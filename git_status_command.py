@@ -16,7 +16,6 @@ class GitStatusManager():
   def __init__(self, window, view):
     self.window = window
     self.view = view
-    self.config = {}
     self.short = True
     self.settings = sublime.load_settings(PACKAGE_SETTINGS)
     self.entries = []
@@ -91,38 +90,16 @@ class GitStatusManager():
       print(err)
       return None
 
-  def process_top_folder(self, topFolder):
+  def process_top_folder(self, folder):
     result = []
 
-    item = self.get_status_for_folder(topFolder)
-    if not item == None:
-      result.append(item)
-
-    if topFolder in self.config:
-      config = self.config[topFolder]
-      for folder in config['data'].keys():
-        if not os.path.exists(folder):
-          continue
-        item = self.get_status_for_folder(folder)
-        if not item == None:
-          result.append(item)
+    git_folder = os.path.join(folder, ".git")
+    if os.path.exists(git_folder):
+      item = self.get_status_for_folder(folder)
+      if not item == None:
+        result.append(item)
 
     return result
-
-  def load_config(self):
-    # Check if we have to reload the config file
-    for folder in self.window.folders():
-      config_file = os.path.join(folder, "package.json")
-      if not os.path.exists(config_file):
-        continue
-      if not folder in self.config or self.config[folder]['timestamp'] < os.path.getmtime(config_file):
-        print("Loading config: %s"%config_file)
-        self.config[folder] = {
-          "timestamp": os.path.getmtime(config_file),
-          "data": read_project_config(folder, git_command=self.settings.get("git_command"))
-        }
-
-    return self.config
 
   def get_entry(self, pos):
     pos = pos.begin()
@@ -144,7 +121,6 @@ class GitStatusManager():
     sel = view.sel()
     oldPos = sel[0]
 
-    self.load_config()
     self.window.focus_view(self.view)
 
     changes = []
