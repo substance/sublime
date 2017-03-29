@@ -1,14 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-"""This module defines a Print function to use with python 2.x or 3.x., so we can use the prompt with older versions of Python too
-
-It's interface is that of python 3.0's print. See
-http://docs.python.org/3.0/library/functions.html?highlight=print#print
-
-Shamelessly ripped from http://www.daniweb.com/software-development/python/code/217214/a-print-function-for-different-versions-of-python
-"""
-
 # change those symbols to whatever you prefer
 symbols = {'ahead of': '↑·', 'behind': '↓·', 'prehash':':'}
 
