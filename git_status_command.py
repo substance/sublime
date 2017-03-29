@@ -202,10 +202,14 @@ class GitGuiCommand(sublime_plugin.TextCommand):
 
     print("Running %s in %s"%(str(cmd), folder))
     startupinfo = None
+    _env = os.environ.copy()
     if os.name == 'nt':
       startupinfo = subprocess.STARTUPINFO()
       startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-    p = subprocess.Popen(cmd, cwd=folder, startupinfo=startupinfo)
+    if os.name == 'posix':
+      _env['PATH'] = "/usr/bin:/usr/local/bin:" + _env['PATH']
+    print("OS NAME: %s"%(str(os.name)))
+    p = subprocess.Popen(cmd, cwd=folder, env=_env, startupinfo=startupinfo)
 
 class GitLogCommand(sublime_plugin.TextCommand):
 
