@@ -1,10 +1,11 @@
-import sublime, sublime_plugin
+import sublime
+from sublime_plugin import WindowCommand, TextCommand, EventListener
 import subprocess
 import os
 import time
 import re
-from utils import read_project_config
-from gitstatus import gitstatus
+from .utils import read_project_config
+from .gitstatus import gitstatus
 
 PACKAGE_SETTINGS = "SubstanceGit.sublime-settings"
 
@@ -35,6 +36,7 @@ class GitStatusManager():
     RE_STRIP_PREFIX = re.compile('^%s(.*)$'%PREFIX)
 
     for line in message.splitlines():
+      line = line.decode('utf-8')
       if RE_WS.match(line):
         continue
       if RE_STAGED_CHANGES.match(line):
@@ -63,13 +65,15 @@ class GitStatusManager():
       elif state == "untracked":
         output.append("  new:        %s"%stripped)
       else:
-        output.append("  "+stripped)
+        output.append(stripped)
 
     return '\n'.join(output)
 
   def get_status_for_folder(self, folder):
     try:
       git_command = self.settings.get('git_command')
+      if not os.path.exists(git_command):
+        raise Exception("path to git is invalid")
       stat = gitstatus(folder, git_command=git_command, plain_only=True)
       if not stat:
         return None
@@ -92,8 +96,8 @@ class GitStatusManager():
 
   def process_top_folder(self, folder):
     result = []
-
     git_folder = os.path.join(folder, ".git")
+    # print("process_top_folder: %s"%(git_folder))
     if os.path.exists(git_folder):
       item = self.get_status_for_folder(folder)
       if not item == None:
@@ -125,32 +129,27 @@ class GitStatusManager():
 
     changes = []
     for folder in self.window.folders():
+      # print("PROCESSING FOLDER: %s"%(folder))
       changes.extend(self.process_top_folder(folder))
 
     # begin edit for adding content
     view.set_read_only(False)
-    edit = view.begin_edit()
 
     self.entries = []
 
     # erase existent content
-    all = sublime.Region(0, view.size()+1)
-    view.erase(edit, all)
-
+    view.run_command("select_all")
+    view.run_command("left_delete")
     if len(changes) == 0:
-      view.insert(edit, view.size(), "Everything committed. Yeaah!\n")
-
+      view.run_command("insert", { "characters": "Everything committed. Yeaah!\n" })
     else:
-
       for folder, output in changes:
         entry = {"folder": folder}
-        view.insert(edit, view.size(), "- %s:\n"%(folder))
-        view.insert(edit, view.size(), "\n")
-        view.insert(edit, view.size(), "%s\n"%output)
-        view.insert(edit, view.size(), "\n")
+        view.run_command("insert", { "characters": "- %s:\n"%(folder) })
+        view.run_command("insert", { "characters": "\n" })
+        view.run_command("insert", { "characters": "%s\n"%output })
+        view.run_command("insert", { "characters": "\n" })
         self.entries.append([view.size(), folder])
-
-    view.end_edit(edit)
 
     # freeze the file
     view.set_read_only(True)
@@ -160,11 +159,12 @@ class GitStatusManager():
     view.sel().add(oldPos)
     view.show(oldPos)
 
-class GitStatusCommand(sublime_plugin.WindowCommand):
+class GitStatusCommand(WindowCommand):
 
   def run(self):
     window = self.window
-    views = filter(lambda x: x.name() == NAME, window.views())
+    views = list(filter(lambda x: x.name() == NAME, window.views()))
+    print(views)
     if len(views) == 0:
       view = window.new_file()
       view.set_name(NAME)
@@ -179,7 +179,7 @@ class GitStatusCommand(sublime_plugin.WindowCommand):
 
     MANAGERS[view.id()].update()
 
-class GitGuiCommand(sublime_plugin.TextCommand):
+class GitGuiCommand(TextCommand):
 
   def __init__(self, view):
     self.view = view
@@ -211,7 +211,7 @@ class GitGuiCommand(sublime_plugin.TextCommand):
     print("OS NAME: %s"%(str(os.name)))
     p = subprocess.Popen(cmd, cwd=folder, env=_env, startupinfo=startupinfo)
 
-class GitLogCommand(sublime_plugin.TextCommand):
+class GitLogCommand(TextCommand):
 
   def __init__(self, view):
     self.view = view
@@ -239,7 +239,7 @@ class GitLogCommand(sublime_plugin.TextCommand):
       startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     p = subprocess.Popen(cmd, cwd=folder, shell=True, startupinfo=startupinfo)
 
-class GitCommand(sublime_plugin.TextCommand):
+class GitCommand(TextCommand):
 
   def __init__(self, view):
     self.view = view
@@ -286,7 +286,7 @@ class GitCommand(sublime_plugin.TextCommand):
 
     self.execute(command, folders)
 
-class GitPush(sublime_plugin.TextCommand):
+class GitPush(TextCommand):
 
   def __init__(self, view):
     self.view = view
@@ -320,7 +320,7 @@ class GitPush(sublime_plugin.TextCommand):
         "callbackCmd": "git_status"
       })
 
-class GitToggleStatusCommand(sublime_plugin.TextCommand):
+class GitToggleStatusCommand(TextCommand):
 
   def run(self, edit):
 
@@ -332,7 +332,7 @@ class GitToggleStatusCommand(sublime_plugin.TextCommand):
     #self.view.window().run_command("git_status")
     manager.update()
 
-class GitCommitListener(sublime_plugin.EventListener):
+class GitCommitListener(EventListener):
 
   def on_query_context(self, view, key, value, operand, match_all):
     if NAME == view.name() and key == "git_status":

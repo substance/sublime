@@ -2,7 +2,7 @@ import re
 import json
 import os
 import types
-from gitstatus import git_repo_info
+from .gitstatus import git_repo_info
 
 # Converts a dict into a dynamic object
 class DictObject(dict):

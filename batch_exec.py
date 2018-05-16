@@ -1,8 +1,8 @@
-from __future__ import generators
-
-import sublime, sublime_plugin
-import os, sys
-import thread
+import sys
+import sublime
+from sublime_plugin import WindowCommand, TextCommand
+import os
+import threading
 import subprocess
 import functools
 import time
@@ -97,7 +97,7 @@ class AsyncProcess(object):
                 self.proc.stderr.close()
                 break
 
-class BatchExecCommand(sublime_plugin.WindowCommand, ProcessListener):
+class BatchExecCommand(WindowCommand, ProcessListener):
 
     def run(self, commands = [], callbackCmd = None, callbackArgs = None, encoding = "utf-8"):
 
@@ -146,7 +146,7 @@ class BatchExecCommand(sublime_plugin.WindowCommand, ProcessListener):
                 yield self
 
             except err_type as e:
-                print "%s"%(str(e))
+                print("%s"%(str(e)))
                 self.append_data(str(e) + "\n")
                 self.append_data("[cmd:  " + str(commands) + "]\n")
                 self.append_data("[dir:  " + str(os.getcwdu()) + "]\n")
@@ -173,16 +173,15 @@ class BatchExecCommand(sublime_plugin.WindowCommand, ProcessListener):
         # in memory.
         str = str.replace('\r\n', '\n').replace('\r', '\n')
 
-        selection_was_at_end = (len(self.output_view.sel()) == 1
-            and self.output_view.sel()[0]
-                == sublime.Region(self.output_view.size()))
-        self.output_view.set_read_only(False)
-        edit = self.output_view.begin_edit()
-        self.output_view.insert(edit, self.output_view.size(), str)
-        if selection_was_at_end:
-            self.output_view.show(self.output_view.size())
-        self.output_view.end_edit(edit)
-        self.output_view.set_read_only(True)
+        view = self.output_view
+
+        selection_was_at_end = (len(view.sel()) == 1
+            and view.sel()[0]
+                == sublime.Region(view.size()))
+        view.set_read_only(False)
+        view.run_command("select_all")
+        view.run_command("overwrite", { "characters": str })
+        view.set_read_only(True)
 
     def finish(self, proc):
         elapsed = time.time() - proc.start_time
