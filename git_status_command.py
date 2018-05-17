@@ -63,7 +63,7 @@ class GitStatusManager():
       if state == "top":
         output.append(stripped)
       elif state == "untracked":
-        output.append("  new:        %s"%stripped)
+        output.append("new:        %s"%stripped)
       else:
         output.append(stripped)
 
