@@ -83,7 +83,7 @@ class GitStatusManager():
       if stat['status'] == "" or stat['status'] == None:
         return None
 
-      if self.short and 'nothing to commit' in stat['status'] and not 'Your branch is ahead' in stat['status'] and not 'Your branch is behind' in stat['status'] and not 'have diverged' in stat['status']:
+      if self.short and 'nothing to commit' in stat['status'] and 'Your branch is up to date' in stat['status'] and not 'Your branch is ahead' in stat['status'] and not 'Your branch is behind' in stat['status'] and not 'have diverged' in stat['status']:
         return None
       elif self.short:
         return [ folder, stat['status'] ]
